@@ -29,8 +29,9 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
             model.train()
             input_ids = input_ids.to(DEVICE)
             target_ids = target_ids.to(DEVICE)
+            L = input_ids.size(1)
             
-            loss = get_loss(model, input_ids, attn_mask, target_ids)
+            loss = get_loss(model, input_ids, attn_mask[:L, :L], target_ids)
             loss /= GRAD_ACCUM_STEP
             loss.backward()
             
