@@ -2,6 +2,8 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+from utils import get_causal_mask
+
 
 class SelfAttention(nn.Module):
     def __init__(self, d_model, n_heads, dropout=0.1):
@@ -83,8 +85,10 @@ class Transformer(nn.Module):
         self.blocks = nn.ModuleList()
         for _ in range(n_blocks):
             self.blocks.append(TransformerBlock(d_model, n_heads, dff, dropout))
+            
+        self.register_buffer('causal_mask', get_causal_mask(maxlen))
         
-    def forward(self, input_ids, attn_mask=None):
+    def forward(self, input_ids):
         L = input_ids.size(1)
         te = self.te(input_ids)
         pe = self.pe(L)
@@ -92,7 +96,7 @@ class Transformer(nn.Module):
         x = te + pe
         
         for block in self.blocks:
-            x = block(x, attn_mask)
+            x = block(x, self.causal_mask[:L, :L])
         
         logits = torch.matmul(x, self.te.weight.T)
         return logits

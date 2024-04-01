@@ -1,7 +1,6 @@
 import torch
 from torcheval.metrics.functional.text import perplexity
 from torcheval.metrics.functional.classification import multiclass_accuracy
-from tqdm import tqdm
 from config import *
 
 

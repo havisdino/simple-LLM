@@ -9,15 +9,14 @@ from torch.utils.tensorboard import SummaryWriter
 from config import *
 
 
-def get_loss(model, input_ids, attn_mask, target_ids):
-    logits = model(input_ids, attn_mask)
+def get_loss(model, input_ids, target_ids):
+    logits = model(input_ids)
     loss = F.cross_entropy(logits.view(-1, VOCAB_SIZE), target_ids.view(-1))
     return loss
 
 
 def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
     writer = SummaryWriter('logs')
-    attn_mask = get_causal_mask(MAXLEN).to(DEVICE)
     global_step = 1
     val_ppl = None
     val_acc = None
@@ -33,7 +32,7 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
             target_ids = target_ids.to(DEVICE)
             L = input_ids.size(1)
             
-            loss = get_loss(model, input_ids, attn_mask[:L, :L], target_ids)
+            loss = get_loss(model, input_ids, target_ids)
             loss /= GRAD_ACCUM_STEP
             loss.backward()
             
