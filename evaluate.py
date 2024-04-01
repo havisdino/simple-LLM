@@ -28,7 +28,7 @@ def evaluate(model, data_loader):
     ppls = []
     accs = []
     
-    for input_ids, target_ids in tqdm(data_loader):
+    for input_ids, target_ids in data_loader:
         input_ids = input_ids.to(DEVICE)
         target_ids = target_ids.to(DEVICE)
         

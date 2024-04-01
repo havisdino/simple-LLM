@@ -22,6 +22,8 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
     val_ppl = None
     val_acc = None
     
+    print(f'Accumulate gradients after {GRAD_ACCUM_STEP} steps')
+    
     for epoch in range(1, 1 + EPOCHS):
         optimizer.zero_grad()
         
