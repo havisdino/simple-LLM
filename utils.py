@@ -39,7 +39,7 @@ def set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr):
         + f'- ppl: {ppl:.4f} - acc: {acc:.4f} ')
     
     if val_acc is not None and val_ppl is not None:
-        description += f'- val_ppl: {val_acc:.4f} - val_acc: {val_acc:.4f} '
+        description += f'- val_ppl: {val_ppl:.4f} - val_acc: {val_acc:.4f} '
         
     description += f'- lr: {lr:.4f}'
     bar.set_description(description)

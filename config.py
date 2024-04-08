@@ -23,8 +23,7 @@ EPOCHS = 200
 GLOBAL_BATCH_SIZE = 2048
 BATCH_SIZE = 32
 GRAD_ACCUM_STEP = GLOBAL_BATCH_SIZE // BATCH_SIZE
-DEVICE = 'cpu'
-EVAL_INTERVAL = 2   # number of grad_accum_steps
+DEVICE = 'cuda'
 CHECKPOINT_EPOCH = 4
 # ------------------------------------------------------------
 

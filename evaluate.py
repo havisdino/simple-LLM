@@ -1,6 +1,7 @@
 import torch
 from torcheval.metrics.functional.text import perplexity
 from torcheval.metrics.functional.classification import multiclass_accuracy
+import tqdm
 from config import *
 
 
@@ -27,7 +28,7 @@ def evaluate(model, data_loader):
     ppls = []
     accs = []
     
-    for input_ids, target_ids in data_loader:
+    for input_ids, target_ids in tqdm(data_loader):
         input_ids = input_ids.to(DEVICE)
         target_ids = target_ids.to(DEVICE)
         

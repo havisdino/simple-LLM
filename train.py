@@ -50,13 +50,12 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
                 set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
                 
                 write_tensorboard_logs(writer, global_step, loss, ppl, acc)
-                
-                if step % (GRAD_ACCUM_STEP * EVAL_INTERVAL) == 0:
-                    val_ppl, val_acc = evaluate(model, val_dl)
-                    write_tensorboard_logs(writer, global_step, val_ppl=val_ppl, val_acc=val_acc)
         
         if epoch % CHECKPOINT_EPOCH == 0:
             save_model(model, epoch)
+            
+        val_ppl, val_acc = evaluate(model, val_dl)
+        write_tensorboard_logs(writer, global_step, val_ppl=val_ppl, val_acc=val_acc)
     writer.close()
                     
 
