@@ -4,7 +4,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 from evaluate import evaluate, get_accurracy, get_perplexity
 from modules import Transformer
-from utils import count_params, get_causal_mask, init_weights, save_model, set_description_bar, write_tensorboard_logs
+from utils import count_params, init_weights, save_model, set_description_bar, write_tensorboard_logs
 from torch.utils.tensorboard import SummaryWriter
 from config import *
 

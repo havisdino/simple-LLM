@@ -1,9 +1,9 @@
 # ---------- Learning rate scheduler settings ----------
-WARMUP_STEP = 120
+WARMUP_STEP = 100
 INIT_LR = 1e-3
 PEAK_LR = 1e-2
 MIN_LR = 2e-4
-DOWN_WEIGHT = 70 # the less the steeper
+DOWN_WEIGHT = 80 # the less the steeper
 # ------------------------------------------------------------
 
 
@@ -20,12 +20,12 @@ WEIGHT_STD = 0.02
 
 
 # ---------- Training settings ----------
-EPOCHS = 200
-GLOBAL_BATCH_SIZE = 2048
-BATCH_SIZE = 32
+EPOCHS = 100000
+GLOBAL_BATCH_SIZE = 1600
+BATCH_SIZE = 16
 GRAD_ACCUM_STEP = GLOBAL_BATCH_SIZE // BATCH_SIZE
 DEVICE = 'cuda'
-CHECKPOINT_EPOCH = 4
+CHECKPOINT_EPOCH = 1
 PREFETCH_FACTOR = 2
 # ------------------------------------------------------------
 
