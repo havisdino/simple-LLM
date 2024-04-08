@@ -12,7 +12,7 @@ def get_causal_mask(maxlen):
 
 def init_weights(m):
     for p in m.parameters():
-        nn.init.normal_(p, std=0.1)
+        nn.init.normal_(p, std=WEIGHT_STD)
 
 
 def count_params(model):
