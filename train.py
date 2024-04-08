@@ -18,8 +18,8 @@ def get_loss(model, input_ids, target_ids):
 def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
     writer = SummaryWriter('logs')
     global_step = 1
-    val_ppl = None
-    val_acc = None
+    ppl, acc = None, None
+    val_ppl, val_acc = None, None
     
     print(f'Accumulate gradients after {GRAD_ACCUM_STEP} steps')
     
@@ -47,8 +47,8 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
                 ppl = get_perplexity(model, input_ids, target_ids)
                 acc = get_accurracy(model, input_ids, target_ids)
                 
-                lr = optimizer.param_groups[0]['lr']
                 write_tensorboard_logs(writer, global_step, loss, ppl, acc)
+            lr = optimizer.param_groups[0]['lr']
             set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
         
         if epoch % CHECKPOINT_EPOCH == 0:
