@@ -27,3 +27,8 @@ DEVICE = 'cpu'
 EVAL_INTERVAL = 2   # number of grad_accum_steps
 CHECKPOINT_EPOCH = 4
 # ------------------------------------------------------------
+
+
+# ---------- Training settings ----------
+END_TOKEN_ID = 29998
+# ------------------------------------------------------------

@@ -8,7 +8,7 @@ from config import *
 def get_perplexity(model, input_ids, target_ids):
     model.eval()
     logits = model(input_ids)
-    ppl = perplexity(logits, target_ids)
+    ppl = perplexity(logits, target_ids, ignore_index=END_TOKEN_ID)
     return ppl
 
 

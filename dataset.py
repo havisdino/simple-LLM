@@ -1,5 +1,8 @@
-from torch.utils.data import DataLoader, IterableDataset
+import torch
+from torch.utils.data import IterableDataset
 from torchtext import transforms
+
+from config import END_TOKEN_ID
 
 
 class TokenDataset(IterableDataset):
@@ -36,10 +39,12 @@ def collate_fn(input_ids):
     input_ids = [item[:-1] for item in input_ids]
     input_ids = transforms.F.to_tensor(
         input=input_ids,
-        padding_value=29998
+        padding_value=END_TOKEN_ID,
+        dtype=torch.int32
     )
     target_ids = transforms.F.to_tensor(
         input=target_ids,
-        padding_value=29998
+        padding_value=END_TOKEN_ID,
+        dtype=torch.long
     )
     return input_ids, target_ids
