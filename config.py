@@ -25,9 +25,10 @@ BATCH_SIZE = 32
 GRAD_ACCUM_STEP = GLOBAL_BATCH_SIZE // BATCH_SIZE
 DEVICE = 'cuda'
 CHECKPOINT_EPOCH = 4
+PREFETCH_FACTOR = 2
 # ------------------------------------------------------------
 
 
-# ---------- Training settings ----------
+# ---------- Data settings ----------
 END_TOKEN_ID = 29998
 # ------------------------------------------------------------

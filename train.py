@@ -47,9 +47,8 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
                 acc = get_accurracy(model, input_ids, target_ids)
                 
                 lr = optimizer.param_groups[0]['lr']
-                set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
-                
                 write_tensorboard_logs(writer, global_step, loss, ppl, acc)
+            set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
         
         if epoch % CHECKPOINT_EPOCH == 0:
             save_model(model, epoch)
@@ -96,10 +95,10 @@ if __name__ == '__main__':
     )
     
     train_ds = TokenDataset(args.train_ds, MAXLEN + 1, MAXLEN // 4)
-    train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn)
+    train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn, prefetch_factor=PREFETCH_FACTOR, num_workers=2)
     
     val_ds = TokenDataset(args.val_ds, MAXLEN + 1, 0)
-    val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn)
+    val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn, prefetch_factor=PREFETCH_FACTOR, num_workers=2)
     
     fit(model, train_dl, val_dl, optimizer, lr_scheduler)
     
