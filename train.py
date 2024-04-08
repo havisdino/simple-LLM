@@ -38,6 +38,7 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
             
             if step % GRAD_ACCUM_STEP == 0:
                 global_step += 1
+                nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 optimizer.step()
                 optimizer.zero_grad()
                 lr_scheduler.step()
