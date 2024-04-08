@@ -55,10 +55,10 @@ def set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr):
 def save_model(model, epoch):
     file_name = f'pretrained-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{epoch}.pt'
     
-    if isinstance(model, nn.Module):
-        torch.save(model.state_dict(), file_name)
-    elif isinstance(model, nn.DataParallel):
+    if isinstance(model, nn.DataParallel):
         torch.save(model.module.state_dict(), file_name)
+    elif isinstance(model, nn.Module):
+        torch.save(model.state_dict(), file_name)
         
         
 def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, acc=None, val_ppl=None, val_acc=None):
