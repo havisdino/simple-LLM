@@ -10,6 +10,11 @@ def get_causal_mask(maxlen):
     return causal_mask
 
 
+def init_weights(m):
+    for p in m.parameters():
+        nn.init.normal_(p, std=0.1)
+
+
 def count_params(model):
     if isinstance(model, nn.DataParallel):
         n_params = sum(p.numel() for p in model.module.parameters())
