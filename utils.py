@@ -83,3 +83,4 @@ def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, acc=None, v
     if val_ppl is not None:    
         writer.add_scalar('ppl/val', val_ppl, global_step)
         writer.add_scalar('acc/val', val_acc, global_step)
+

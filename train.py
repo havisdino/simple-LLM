@@ -5,8 +5,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 from dataset import CSVTextDataset
 from evaluate import evaluate, get_accurracy, get_perplexity
-from modules import Transformer
-from rezero_modules import ReZeroTransformer
+from modules import get_model_from_config
 from utils import count_params, init_weights, save_model, set_description_bar, write_tensorboard_logs
 from torch.utils.tensorboard import SummaryWriter
 from config import *
@@ -20,7 +19,7 @@ def get_loss(model, input_ids, target_ids):
 
 def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler):
     writer = SummaryWriter('logs')
-    global_step = 1
+    global_step = 0
     ppl, acc = None, None
     val_ppl, val_acc = None, None
     
@@ -85,23 +84,7 @@ if __name__ == '__main__':
     
     tokenizer = Tokenizer.from_file(args.tokenizer)
     
-    settings = dict(
-        d_model=D_MODEL,
-        n_heads=N_HEADS,
-        dff=DFF,
-        n_blocks=N_BLOCKS,
-        maxlen=MAXLEN,
-        vocab_size=VOCAB_SIZE,
-        dropout=DROPOUT
-    )
-
-    if ARCHITECTURE == 'vanilla':
-        model = Transformer(**settings)
-    elif ARCHITECTURE == 'rezero':
-        model = ReZeroTransformer(**settings)
-    else:
-        raise ValueError()
-    
+    model = get_model_from_config() 
     count_params(model)
     
     if args.from_checkpoint is not None:
