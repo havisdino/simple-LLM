@@ -86,6 +86,7 @@ class Transformer(nn.Module):
         self.blocks = nn.ModuleList()
         for _ in range(n_blocks):
             self.blocks.append(TransformerBlock(d_model, n_heads, dff, dropout))
+        self.outproj = nn.Linear(d_model, vocab_size)
             
         self.register_buffer('causal_mask', get_causal_mask(maxlen))
         
@@ -99,7 +100,7 @@ class Transformer(nn.Module):
         for block in self.blocks:
             x = block(x, self.causal_mask[:L, :L])
         
-        logits = torch.matmul(x, self.te.weight.T)
+        logits = self.outproj(x)
         return logits
 
 
@@ -130,6 +131,7 @@ class ReZeroTransformer(nn.Module):
         self.blocks = nn.ModuleList()
         for _ in range(n_blocks):
             self.blocks.append(ReZeroTransformerBlock(d_model, n_heads, dff, dropout))
+        self.outproj = nn.Linear(d_model, vocab_size)
             
         self.register_buffer('causal_mask', get_causal_mask(maxlen)) 
         
@@ -143,7 +145,7 @@ class ReZeroTransformer(nn.Module):
         for block in self.blocks:
             x = block(x, self.causal_mask[:L, :L])
         
-        logits = torch.matmul(x, self.te.weight.T)
+        logits = self.outproj(x)
         return logits
     
     
