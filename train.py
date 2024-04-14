@@ -48,20 +48,36 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler):
                 
                 loss = loss.detach().item() * GRAD_ACCUM_STEP
                 with torch.autocast(DEVICE, torch.float16, enabled=USE_AMP):
-                    ppl = get_perplexity(model, input_ids, target_ids)
-                    acc = get_accurracy(model, input_ids, target_ids)
+                    ppl = get_perplexity(model, input_ids, target_ids).item()
+                    acc = get_accurracy(model, input_ids, target_ids).item()
                 
                 global_step += 1
                 write_tensorboard_logs(writer, global_step, loss, ppl, acc)
                 lr = optimizer.param_groups[0]['lr']
                 grad_step = step // GRAD_ACCUM_STEP
-                set_description_bar(bar, epoch, grad_step, loss, ppl, acc, val_ppl, val_acc, lr)
+                set_description_bar(
+                    bar, epoch, grad_step,
+                    loss=loss,
+                    ppl=ppl,
+                    acc=acc, 
+                    val_ppl=val_ppl,
+                    val_acc=val_acc,
+                    lr=f'{lr:.2e}'
+                )
                 
                 if grad_step % CHECKPOINT_STEP == 0:
-                    bar.set_description(bar.desc + '- validating')
+                    bar.set_description(bar.desc + ' - validating')
                     val_ppl, val_acc = evaluate(model, val_dl)
                     write_tensorboard_logs(writer, global_step, val_ppl=val_ppl, val_acc=val_acc)
-                    set_description_bar(bar, epoch, grad_step, loss, ppl, acc, val_ppl, val_acc, lr)
+                    set_description_bar(
+                        bar, epoch, grad_step,
+                        loss=loss,
+                        ppl=ppl,
+                        acc=acc, 
+                        val_ppl=val_ppl,
+                        val_acc=val_acc,
+                        lr=lr
+                    )
                     save_model(model, optimizer, scaler, lr_scheduler, global_step, f'pretrained_{ARCHITECTURE}')
     writer.close()
                     

@@ -37,7 +37,7 @@ def evaluate(model, data_loader):
     
     ppl = sum(ppls) / len(ppls)
     acc = sum(accs) / len(accs)
-    return ppl, acc
+    return ppl.item(), acc.item()
         
         
         

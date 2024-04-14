@@ -40,17 +40,10 @@ def lr_schedule(step):
         return lr
     
 
-def set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr):
-    description = f'epoch: {epoch}/{EPOCHS} - step: {step} - loss: {loss:.4f} '
-    
-    if ppl is not None and acc is not None:
-        description += f'- ppl: {ppl:.4f} - acc: {acc:.4f} '
-    
-    if val_acc is not None and val_ppl is not None:
-        description += f'- val_ppl: {val_ppl:.4f} - val_acc: {val_acc:.4f} '
-        
-    description += f'- lr: {lr:.2e}'
+def set_description_bar(bar, epoch, step, **kwargs):
+    description = f'epoch {epoch}/{EPOCHS} - step {step}'
     bar.set_description(description)
+    bar.set_postfix(kwargs)
     
     
 def save_model(model, optimizer, scaler, lr_scheduler, step, label='pretrained'):
