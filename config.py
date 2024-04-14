@@ -1,5 +1,5 @@
 # ---------- Learning rate scheduler settings ----------
-WARMUP_STEP = 200
+WARMUP_STEP = 180
 INIT_LR = 1e-3
 PEAK_LR = 1e-2
 MIN_LR = 2e-4
@@ -15,7 +15,7 @@ N_BLOCKS = 8
 MAXLEN = 256
 VOCAB_SIZE = 30000
 DROPOUT = 0.1
-WEIGHT_STD = 0.02
+WEIGHT_STD = 0.05
 # ------------------------------------------------------------
 
 
@@ -26,8 +26,9 @@ GLOBAL_BATCH_SIZE = 1600
 BATCH_SIZE = 16
 GRAD_ACCUM_STEP = GLOBAL_BATCH_SIZE // BATCH_SIZE
 DEVICE = 'cuda'
-CHECKPOINT_STEP = 5     # Save the model after <CHECKPOINT_STEP> steps of grad accumulation
+CHECKPOINT_STEP = 10     # Save the model after <CHECKPOINT_STEP> steps of grad accumulation
 PREFETCH_FACTOR = 2
+USE_AMP = True
 # ------------------------------------------------------------
 
 

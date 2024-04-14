@@ -24,6 +24,8 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
     ppl, acc = None, None
     val_ppl, val_acc = None, None
     
+    scaler = torch.cuda.amp.GradScaler()
+    
     print(f'Accumulate gradients after {GRAD_ACCUM_STEP} steps')
     
     for epoch in range(1, 1 + EPOCHS):
@@ -34,14 +36,16 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
             input_ids = input_ids.to(DEVICE)
             target_ids = target_ids.to(DEVICE)
             
-            loss = get_loss(model, input_ids, target_ids)
-            loss /= GRAD_ACCUM_STEP
-            loss.backward()
+            with torch.autocast(DEVICE, torch.float16, enabled=USE_AMP):
+                loss = get_loss(model, input_ids, target_ids)
+                loss /= GRAD_ACCUM_STEP
+            scaler.scale(loss).backward()
             
             if step % GRAD_ACCUM_STEP == 0:
-                global_step += 1
+                scaler.unscale_(optimizer)
                 nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-                optimizer.step()
+                scaler.step(optimizer)
+                scaler.update()
                 optimizer.zero_grad()
                 lr_scheduler.step()
                 
@@ -49,14 +53,16 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
                 ppl = get_perplexity(model, input_ids, target_ids)
                 acc = get_accurracy(model, input_ids, target_ids)
                 
+                global_step += 1
                 write_tensorboard_logs(writer, global_step, loss, ppl, acc)
                 lr = optimizer.param_groups[0]['lr']
                 set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
                 
                 if (step // GRAD_ACCUM_STEP) % CHECKPOINT_STEP == 0:
+                    bar.set_description(bar.desc + ' - validating')
                     val_ppl, val_acc = evaluate(model, val_dl)
                     set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
-                    save_model(model, epoch, f'pretrained_{ARCHITECTURE}')
+                    save_model(model, optimizer, scaler, epoch, f'pretrained_{ARCHITECTURE}')
              
         write_tensorboard_logs(writer, global_step, val_ppl=val_ppl, val_acc=val_acc)
     writer.close()
@@ -117,8 +123,15 @@ if __name__ == '__main__':
         train_ds = TokenDataset(args.train_ds, MAXLEN + 1, MAXLEN // 4)
         val_ds = TokenDataset(args.val_ds, MAXLEN + 1, 0)
     
-    train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn, prefetch_factor=PREFETCH_FACTOR, num_workers=2)
-    val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn, prefetch_factor=PREFETCH_FACTOR, num_workers=2)
+    loader_settings = dict(
+        batch_size=BATCH_SIZE,
+        collate_fn=collate_fn,
+        prefetch_factor=PREFETCH_FACTOR,
+        num_workers=2,
+        drop_last=True
+    )
+    train_dl = DataLoader(train_ds, **loader_settings)
+    val_dl = DataLoader(val_ds, **loader_settings)
     
     fit(model, train_dl, val_dl, optimizer, lr_scheduler)
     

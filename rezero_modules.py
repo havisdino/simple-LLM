@@ -8,7 +8,10 @@ from utils import get_causal_mask
 class ReZeroTransformerBlock(nn.Module):
     def __init__(self, d_model, n_heads, dff, dropout=0.1):
         super().__init__()
-        self.register_parameter('alpha', torch.zeros(0, requires_grad=True))
+        self.register_parameter(
+            'alpha',
+            nn.Parameter(torch.zeros(1), requires_grad=True)
+        )
         self.self_attn = SelfAttention(d_model, n_heads, dropout)
         self.ffn = FFN(d_model, dff)
         self.dropout = nn.Dropout(dropout)

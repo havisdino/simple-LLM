@@ -48,17 +48,25 @@ def set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr):
     if val_acc is not None and val_ppl is not None:
         description += f'- val_ppl: {val_ppl:.4f} - val_acc: {val_acc:.4f} '
         
-    description += f'- lr: {lr:.4f}'
+    description += f'- lr: {lr:.2e}'
     bar.set_description(description)
     
     
-def save_model(model, epoch, label='pretrained'):
+def save_model(model, optimizer, scaler, epoch, label='pretrained'):
     file_name = f'{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{epoch}.pt'
     
     if isinstance(model, nn.DataParallel):
-        torch.save(model.module.state_dict(), file_name)
+        model_state_dict = model.module.state_dict()
     elif isinstance(model, nn.Module):
-        torch.save(model.state_dict(), file_name)
+        model_state_dict = model.state_dict()
+    
+    checkpoint = dict(
+        model=model_state_dict,
+        optimizer=optimizer.state_dict(),
+        scaler=scaler.state_dict()
+    )
+    
+    torch.save(checkpoint, file_name)
         
         
 def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, acc=None, val_ppl=None, val_acc=None, lr=None):

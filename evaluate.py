@@ -1,7 +1,6 @@
 import torch
 from torcheval.metrics.functional.text import perplexity
 from torcheval.metrics.functional.classification import multiclass_accuracy
-import tqdm
 from config import *
 
 
@@ -28,12 +27,13 @@ def evaluate(model, data_loader):
     ppls = []
     accs = []
     
-    for input_ids, target_ids in tqdm(data_loader):
+    for input_ids, target_ids in data_loader:
         input_ids = input_ids.to(DEVICE)
         target_ids = target_ids.to(DEVICE)
         
-        ppls.append(get_perplexity(model, input_ids, target_ids))
-        accs.append(get_accurracy(model, input_ids, target_ids))
+        with torch.autocast(DEVICE, torch.float16, enabled=USE_AMP):
+            ppls.append(get_perplexity(model, input_ids, target_ids))
+            accs.append(get_accurracy(model, input_ids, target_ids))
     
     ppl = sum(ppls) / len(ppls)
     acc = sum(accs) / len(accs)
