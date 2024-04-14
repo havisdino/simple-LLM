@@ -4,6 +4,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 from evaluate import evaluate, get_accurracy, get_perplexity
 from modules import Transformer
+from rezero_modules import ReZeroTransformer
 from utils import count_params, init_weights, save_model, set_description_bar, write_tensorboard_logs
 from torch.utils.tensorboard import SummaryWriter
 from config import *
@@ -30,7 +31,6 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
             model.train()
             input_ids = input_ids.to(DEVICE)
             target_ids = target_ids.to(DEVICE)
-            L = input_ids.size(1)
             
             loss = get_loss(model, input_ids, target_ids)
             loss /= GRAD_ACCUM_STEP
@@ -48,13 +48,14 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
                 acc = get_accurracy(model, input_ids, target_ids)
                 
                 write_tensorboard_logs(writer, global_step, loss, ppl, acc)
-            lr = optimizer.param_groups[0]['lr']
-            set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
-        
-        if epoch % CHECKPOINT_EPOCH == 0:
-            save_model(model, epoch)
-            
-        val_ppl, val_acc = evaluate(model, val_dl)
+                lr = optimizer.param_groups[0]['lr']
+                set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
+                
+                if (step // GRAD_ACCUM_STEP) % CHECKPOINT_STEP == 0:
+                    val_ppl, val_acc = evaluate(model, val_dl)
+                    set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
+                    save_model(model, epoch, f'pretrained_{ARCHITECTURE}')
+             
         write_tensorboard_logs(writer, global_step, val_ppl=val_ppl, val_acc=val_acc)
     writer.close()
                     
@@ -72,8 +73,8 @@ if __name__ == '__main__':
     parser.add_argument('--data-parallel', type=bool, default=True)
     
     args = parser.parse_args()
-
-    model = Transformer(
+    
+    settings = dict(
         d_model=D_MODEL,
         n_heads=N_HEADS,
         dff=DFF,
@@ -82,6 +83,14 @@ if __name__ == '__main__':
         vocab_size=VOCAB_SIZE,
         dropout=DROPOUT
     )
+
+    if ARCHITECTURE == 'vanilla':
+        model = Transformer(**settings)
+    elif ARCHITECTURE == 'rezero':
+        model = ReZeroTransformer(**settings)
+    else:
+        raise ValueError()
+    
     model.apply(init_weights)
     count_params(model)
     

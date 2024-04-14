@@ -52,8 +52,8 @@ def set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr):
     bar.set_description(description)
     
     
-def save_model(model, epoch):
-    file_name = f'pretrained-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{epoch}.pt'
+def save_model(model, epoch, label='pretrained'):
+    file_name = f'{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{epoch}.pt'
     
     if isinstance(model, nn.DataParallel):
         torch.save(model.module.state_dict(), file_name)
@@ -61,7 +61,7 @@ def save_model(model, epoch):
         torch.save(model.state_dict(), file_name)
         
         
-def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, acc=None, val_ppl=None, val_acc=None):
+def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, acc=None, val_ppl=None, val_acc=None, lr=None):
     if loss is not None:
         writer.add_scalar('loss/train', loss, global_step)
         writer.add_scalar('ppl/train', ppl, global_step)
