@@ -1,3 +1,4 @@
+import os
 import torch
 from torch import nn
 from config import *
@@ -52,8 +53,11 @@ def set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr):
     bar.set_description(description)
     
     
-def save_model(model, optimizer, scaler, epoch, label='pretrained'):
-    file_name = f'{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{epoch}.pt'
+def save_model(model, optimizer, scaler, lr_scheduler, step, label='pretrained'):
+    if not os.path.exists('./checkpoints'):
+        os.makedirs('checkpoints')
+        
+    path = f'checkpoints/{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{step}.pt'
     
     if isinstance(model, nn.DataParallel):
         model_state_dict = model.module.state_dict()
@@ -63,10 +67,11 @@ def save_model(model, optimizer, scaler, epoch, label='pretrained'):
     checkpoint = dict(
         model=model_state_dict,
         optimizer=optimizer.state_dict(),
-        scaler=scaler.state_dict()
+        scaler=scaler.state_dict(),
+        lr_scheduler=lr_scheduler.state_dict()
     )
     
-    torch.save(checkpoint, file_name)
+    torch.save(checkpoint, path)
         
         
 def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, acc=None, val_ppl=None, val_acc=None, lr=None):

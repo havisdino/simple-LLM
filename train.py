@@ -18,13 +18,11 @@ def get_loss(model, input_ids, target_ids):
     return loss
 
 
-def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
+def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler):
     writer = SummaryWriter('logs')
     global_step = 1
     ppl, acc = None, None
     val_ppl, val_acc = None, None
-    
-    scaler = torch.cuda.amp.GradScaler()
     
     print(f'Accumulate gradients after {GRAD_ACCUM_STEP} steps')
     
@@ -50,21 +48,22 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler):
                 lr_scheduler.step()
                 
                 loss = loss.detach().item() * GRAD_ACCUM_STEP
-                ppl = get_perplexity(model, input_ids, target_ids)
-                acc = get_accurracy(model, input_ids, target_ids)
+                with torch.autocast(DEVICE, torch.float16, enabled=USE_AMP):
+                    ppl = get_perplexity(model, input_ids, target_ids)
+                    acc = get_accurracy(model, input_ids, target_ids)
                 
                 global_step += 1
                 write_tensorboard_logs(writer, global_step, loss, ppl, acc)
                 lr = optimizer.param_groups[0]['lr']
-                set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
+                grad_step = step // GRAD_ACCUM_STEP
+                set_description_bar(bar, epoch, grad_step, loss, ppl, acc, val_ppl, val_acc, lr)
                 
-                if (step // GRAD_ACCUM_STEP) % CHECKPOINT_STEP == 0:
-                    bar.set_description(bar.desc + ' - validating')
+                if grad_step % CHECKPOINT_STEP == 0:
+                    bar.set_description(bar.desc + '- validating')
                     val_ppl, val_acc = evaluate(model, val_dl)
-                    set_description_bar(bar, epoch, step, loss, ppl, acc, val_ppl, val_acc, lr)
-                    save_model(model, optimizer, scaler, epoch, f'pretrained_{ARCHITECTURE}')
-             
-        write_tensorboard_logs(writer, global_step, val_ppl=val_ppl, val_acc=val_acc)
+                    write_tensorboard_logs(writer, global_step, val_ppl=val_ppl, val_acc=val_acc)
+                    set_description_bar(bar, epoch, grad_step, loss, ppl, acc, val_ppl, val_acc, lr)
+                    save_model(model, optimizer, scaler, lr_scheduler, global_step, f'pretrained_{ARCHITECTURE}')
     writer.close()
                     
 
@@ -80,6 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--val-ds', type=str, required=True)
     parser.add_argument('--data-parallel', type=bool, default=True)
     parser.add_argument('--tokenizer', type=str, default='tokenizer/byte-level-bpe-wikitext103.json')
+    parser.add_argument('--from-checkpoint', default=None)
     
     args = parser.parse_args()
     
@@ -102,13 +102,19 @@ if __name__ == '__main__':
     else:
         raise ValueError()
     
-    model.apply(init_weights)
     count_params(model)
+    checkpoint = torch.load(args.from_checkpoint, DEVICE)
+    
+    if args.from_checkpoint is not None:
+        model.load_state_dict(checkpoint['model'])
+    else:
+        model.apply(init_weights)
     
     if args.data_parallel:
         model = nn.DataParallel(model)
     model.to(DEVICE)
     
+    scaler = torch.cuda.amp.GradScaler()
     optimizer = torch.optim.AdamW(model.parameters(), lr=1.)
 
     lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
@@ -116,12 +122,17 @@ if __name__ == '__main__':
         lr_lambda=lr_schedule 
     )
     
+    if args.from_checkpoint is not None:
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+        scaler.load_state_dict(checkpoint['scaler'])
+    
     if args.train_ds.endswith('.csv'):
         train_ds = CSVTextDataset(args.train_ds, MAXLEN + 1, tokenizer)
-        val_ds = CSVTextDataset(args.val_ds, MAXLEN + 1, tokenizer)
-    elif args.train_ds.endswith('bds'):
+        val_ds = CSVTextDataset(args.val_ds, MAXLEN + 1, tokenizer, limit=VAL_LIMIT)
+    elif args.train_ds.endswith('.bds'):
         train_ds = TokenDataset(args.train_ds, MAXLEN + 1, MAXLEN // 4)
-        val_ds = TokenDataset(args.val_ds, MAXLEN + 1, 0)
+        val_ds = TokenDataset(args.val_ds, MAXLEN + 1, 0, limit=VAL_LIMIT)
     
     loader_settings = dict(
         batch_size=BATCH_SIZE,
@@ -133,5 +144,5 @@ if __name__ == '__main__':
     train_dl = DataLoader(train_ds, **loader_settings)
     val_dl = DataLoader(val_ds, **loader_settings)
     
-    fit(model, train_dl, val_dl, optimizer, lr_scheduler)
+    fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler)
     

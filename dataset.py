@@ -37,20 +37,25 @@ class TokenDataset(IterableDataset):
     
     
 class CSVTextDataset(IterableDataset):
-    def __init__(self, csv_path, n_tokens, tokenizer: Tokenizer, column='text'):
+    def __init__(self, csv_path, n_tokens, tokenizer: Tokenizer, column='text', limit=None):
         super().__init__()
         self.tokenizer = tokenizer
         self.n_tokens = n_tokens
         self.column = column
         self.df = pl.read_csv(csv_path, columns=[column])
         self.ids_cache = []
+        self.limit = limit
     
     def generate_sequences(self):
+        count = 0
         for row in self.df.iter_rows(named=self.column):
             text = row[self.column]
             
             while len(self.ids_cache) > self.n_tokens:
                 yield self.ids_cache[:self.n_tokens]
+                count += 1
+                if self.limit and count == self.limit:
+                    return
                 self.ids_cache = self.ids_cache[self.n_tokens:]
             
             ids = self.tokenizer.encode(text).ids
