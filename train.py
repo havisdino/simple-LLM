@@ -66,7 +66,7 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler):
                 )
                 
                 if grad_step % CHECKPOINT_STEP == 0:
-                    bar.set_description(bar.desc + ' - validating')
+                    bar.set_description(bar.desc + 'validating...')
                     val_ppl, val_acc = evaluate(model, val_dl)
                     write_tensorboard_logs(writer, global_step, val_ppl=val_ppl, val_acc=val_acc)
                     set_description_bar(

@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -58,6 +59,37 @@ class FFN(nn.Sequential):
         self.append(nn.Linear(dff, d_model))
         
 
+class Transformer(nn.Module, ABC):
+    def __init__(self, d_model, n_heads, dff, n_blocks, maxlen, vocab_size, dropout=0.1):
+        super().__init__()
+        self.n_blocks = n_blocks
+        self.te = nn.Embedding(vocab_size, d_model)
+        self.pe = PositionalEmbedding(maxlen, d_model)
+        self.outproj = nn.Linear(d_model, vocab_size)
+        
+        self.blocks = nn.ModuleList()
+        self._build_transformer_blocks(n_blocks, d_model, n_heads, dff, dropout)
+            
+        self.register_buffer('causal_mask', get_causal_mask(maxlen))
+    
+    @abstractmethod
+    def _build_transformer_blocks(self, n_blocks, d_model, n_heads, dff, dropout):
+        pass
+        
+    def forward(self, input_ids):
+        L = input_ids.size(1)
+        te = self.te(input_ids)
+        pe = self.pe(L)
+        
+        x = te + pe
+        
+        for block in self.blocks:
+            x = block(x, self.causal_mask[:L, :L])
+        
+        logits = self.outproj(x)
+        return logits
+        
+
 class VanillaTransformerBlock(nn.Module):
     def __init__(self, d_model, n_heads, dff, dropout=0.1):
         super().__init__()
@@ -76,32 +108,6 @@ class VanillaTransformerBlock(nn.Module):
         x = x + self.ffn(x)
         x = self.dropout(x)
         return x
-    
-
-class VanillaTransformer(nn.Module):
-    def __init__(self, d_model, n_heads, dff, n_blocks, maxlen, vocab_size, dropout=0.1):
-        super().__init__()
-        self.te = nn.Embedding(vocab_size, d_model)
-        self.pe = PositionalEmbedding(maxlen, d_model)
-        self.blocks = nn.ModuleList()
-        for _ in range(n_blocks):
-            self.blocks.append(VanillaTransformerBlock(d_model, n_heads, dff, dropout))
-        self.outproj = nn.Linear(d_model, vocab_size)
-            
-        self.register_buffer('causal_mask', get_causal_mask(maxlen))
-        
-    def forward(self, input_ids):
-        L = input_ids.size(1)
-        te = self.te(input_ids)
-        pe = self.pe(L)
-        
-        x = te + pe
-        
-        for block in self.blocks:
-            x = block(x, self.causal_mask[:L, :L])
-        
-        logits = self.outproj(x)
-        return logits
 
 
 class ReZeroTransformerBlock(nn.Module):
@@ -122,31 +128,17 @@ class ReZeroTransformerBlock(nn.Module):
         x = self.dropout(x)
         return x
     
+    
+class VanillaTransformer(Transformer):
+    def _build_transformer_blocks(self, n_blocks, d_model, n_heads, dff, dropout):
+        for _ in range(n_blocks):
+            self.blocks.append(VanillaTransformerBlock(d_model, n_heads, dff, dropout))
+    
 
-class ReZeroTransformer(nn.Module):
-    def __init__(self, d_model, n_heads, dff, n_blocks, maxlen, vocab_size, dropout=0.1):
-        super().__init__()
-        self.te = nn.Embedding(vocab_size, d_model)
-        self.pe = PositionalEmbedding(maxlen, d_model)
-        self.blocks = nn.ModuleList()
+class ReZeroTransformer(Transformer):
+    def _build_transformer_blocks(self, n_blocks, d_model, n_heads, dff, dropout):
         for _ in range(n_blocks):
             self.blocks.append(ReZeroTransformerBlock(d_model, n_heads, dff, dropout))
-        self.outproj = nn.Linear(d_model, vocab_size)
-            
-        self.register_buffer('causal_mask', get_causal_mask(maxlen)) 
-        
-    def forward(self, input_ids):
-        L = input_ids.size(1)
-        te = self.te(input_ids)
-        pe = self.pe(L)
-        
-        x = te + pe
-        
-        for block in self.blocks:
-            x = block(x, self.causal_mask[:L, :L])
-        
-        logits = self.outproj(x)
-        return logits
     
     
 def get_model_from_config():
