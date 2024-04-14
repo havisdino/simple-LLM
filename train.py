@@ -103,9 +103,9 @@ if __name__ == '__main__':
         raise ValueError()
     
     count_params(model)
-    checkpoint = torch.load(args.from_checkpoint, DEVICE)
     
     if args.from_checkpoint is not None:
+        checkpoint = torch.load(args.from_checkpoint, DEVICE)
         model.load_state_dict(checkpoint['model'])
     else:
         model.apply(init_weights)
