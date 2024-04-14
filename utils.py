@@ -40,27 +40,6 @@ def set_description_bar(bar, epoch, step, **kwargs):
     description = f'epoch {epoch}/{EPOCHS} - step {step}'
     bar.set_description(description)
     bar.set_postfix(kwargs)
-    
-    
-def save_model(model, optimizer, scaler, lr_scheduler, step, label='pretrained'):
-    if not os.path.exists('./checkpoints'):
-        os.makedirs('checkpoints')
-        
-    path = f'checkpoints/{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{step}.pt'
-    
-    if isinstance(model, nn.DataParallel):
-        model_state_dict = model.module.state_dict()
-    elif isinstance(model, nn.Module):
-        model_state_dict = model.state_dict()
-    
-    checkpoint = dict(
-        model=model_state_dict,
-        optimizer=optimizer.state_dict(),
-        scaler=scaler.state_dict(),
-        lr_scheduler=lr_scheduler.state_dict()
-    )
-    
-    torch.save(checkpoint, path)
         
         
 def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, val_ppl=None, lr=None):

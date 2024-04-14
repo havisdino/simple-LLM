@@ -6,7 +6,8 @@ from tqdm import tqdm
 from dataset import CSVTextDataset
 from evaluate import evaluate, get_perplexity
 from modules import get_model_from_config
-from utils import count_params, init_weights, save_model, set_description_bar, write_tensorboard_logs
+from tracker import Tracker
+from utils import count_params, init_weights, set_description_bar, write_tensorboard_logs
 from torch.utils.tensorboard import SummaryWriter
 from config import *
 
@@ -19,6 +20,7 @@ def get_loss(model, input_ids, target_ids):
 
 def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler):
     writer = SummaryWriter('logs')
+    tracker = Tracker(model, optimizer, scaler, lr_scheduler)
     global_step = 0
     ppl, val_ppl = None, None
     
@@ -72,7 +74,7 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler):
                         val_ppl=val_ppl,
                         lr=f'{lr:.2e}'
                     )
-                    save_model(model, optimizer, scaler, lr_scheduler, global_step, f'pretrained_{ARCHITECTURE}')
+                    tracker.save_model(global_step)
     writer.close()
                     
 
