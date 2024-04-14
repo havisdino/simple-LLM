@@ -14,6 +14,10 @@ class Sampler:
         self.model.eval()
         self.tokenizer = tokenizer
         self.robust_factor = robust_factor
+        if device == 'cuda':
+            self.dtype = torch.float16
+        elif device == 'cpu':
+            self.dtype = torch.bfloat16
     
     @torch.no_grad()
     def sample(self, seed, top_k=5):
@@ -21,19 +25,20 @@ class Sampler:
         
         while len(ids) <= MAXLEN:
             inputs = torch.tensor([ids], device=self.device)
-            with torch.autocast(self.device, torch.float16, enabled=USE_AMP):
+
+            with torch.autocast(self.device, self.dtype, enabled=USE_AMP):
                 logits = self.model(inputs)[0, -1]
                 
-            # scale to make the prediction robust
-            logits = (logits - logits.mean()) * self.robust_factor
-            
-            # mask out-of-top-k classes
-            i = torch.topk(logits, top_k).indices
-            mask = F.one_hot(i, VOCAB_SIZE).long().sum(0)
-            mask = torch.where(mask == 0, -float('inf'), 0)
-            logits += mask
-            logits = logits.softmax(-1)
-            
+                # scale to make the prediction robust
+                logits = (logits - logits.mean()) * self.robust_factor
+                
+                # mask out-of-top-k classes
+                i = torch.topk(logits, top_k).indices
+                mask = F.one_hot(i, VOCAB_SIZE).sum(0)
+                mask = torch.where(mask == 0, -float('inf'), 0)
+                logits += mask
+                logits = logits.softmax(-1)
+                
             # sampling 
             pred = torch.multinomial(logits, num_samples=1).item()
             ids.append(pred)
