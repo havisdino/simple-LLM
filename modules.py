@@ -58,7 +58,7 @@ class FFN(nn.Sequential):
         self.append(nn.Linear(dff, d_model))
         
 
-class TransformerBlock(nn.Module):
+class VanillaTransformerBlock(nn.Module):
     def __init__(self, d_model, n_heads, dff, dropout=0.1):
         super().__init__()
         
@@ -78,14 +78,14 @@ class TransformerBlock(nn.Module):
         return x
     
 
-class Transformer(nn.Module):
+class VanillaTransformer(nn.Module):
     def __init__(self, d_model, n_heads, dff, n_blocks, maxlen, vocab_size, dropout=0.1):
         super().__init__()
         self.te = nn.Embedding(vocab_size, d_model)
         self.pe = PositionalEmbedding(maxlen, d_model)
         self.blocks = nn.ModuleList()
         for _ in range(n_blocks):
-            self.blocks.append(TransformerBlock(d_model, n_heads, dff, dropout))
+            self.blocks.append(VanillaTransformerBlock(d_model, n_heads, dff, dropout))
         self.outproj = nn.Linear(d_model, vocab_size)
             
         self.register_buffer('causal_mask', get_causal_mask(maxlen))
@@ -161,7 +161,7 @@ def get_model_from_config():
     )
     
     if ARCHITECTURE == 'vanilla':
-        model = Transformer(**settings)
+        model = VanillaTransformer(**settings)
     elif ARCHITECTURE == 'rezero':
         model = ReZeroTransformer(**settings)
     else:
