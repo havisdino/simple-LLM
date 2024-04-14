@@ -1,7 +1,9 @@
 from argparse import ArgumentParser
+from tokenizers import Tokenizer
 import torch
 from torch.nn import functional as F
 from tqdm import tqdm
+from dataset import CSVTextDataset
 from evaluate import evaluate, get_accurracy, get_perplexity
 from modules import Transformer
 from rezero_modules import ReZeroTransformer
@@ -71,8 +73,11 @@ if __name__ == '__main__':
     parser.add_argument('--train-ds', type=str, required=True)
     parser.add_argument('--val-ds', type=str, required=True)
     parser.add_argument('--data-parallel', type=bool, default=True)
+    parser.add_argument('--tokenizer', type=str, default='tokenizer/byte-level-bpe-wikitext103.json')
     
     args = parser.parse_args()
+    
+    tokenizer = Tokenizer.from_file(args.tokenizer)
     
     settings = dict(
         d_model=D_MODEL,
@@ -105,10 +110,14 @@ if __name__ == '__main__':
         lr_lambda=lr_schedule 
     )
     
-    train_ds = TokenDataset(args.train_ds, MAXLEN + 1, MAXLEN // 4)
-    train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn, prefetch_factor=PREFETCH_FACTOR, num_workers=2)
+    if args.train_ds.endswith('.csv'):
+        train_ds = CSVTextDataset(args.train_ds, MAXLEN + 1, tokenizer)
+        val_ds = CSVTextDataset(args.val_ds, MAXLEN + 1, tokenizer)
+    elif args.train_ds.endswith('bds'):
+        train_ds = TokenDataset(args.train_ds, MAXLEN + 1, MAXLEN // 4)
+        val_ds = TokenDataset(args.val_ds, MAXLEN + 1, 0)
     
-    val_ds = TokenDataset(args.val_ds, MAXLEN + 1, 0)
+    train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn, prefetch_factor=PREFETCH_FACTOR, num_workers=2)
     val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE, collate_fn=collate_fn, prefetch_factor=PREFETCH_FACTOR, num_workers=2)
     
     fit(model, train_dl, val_dl, optimizer, lr_scheduler)

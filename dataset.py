@@ -1,6 +1,8 @@
+from tokenizers import Tokenizer
 import torch
-from torch.utils.data import IterableDataset
+from torch.utils.data import IterableDataset, Dataset
 from torchtext import transforms
+import polars as pl
 
 from config import END_TOKEN_ID
 
@@ -32,7 +34,32 @@ class TokenDataset(IterableDataset):
 
     def __iter__(self):
         return self.generate_sequences()
-
+    
+    
+class CSVTextDataset(IterableDataset):
+    def __init__(self, csv_path, n_tokens, tokenizer: Tokenizer, column='text'):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.n_tokens = n_tokens
+        self.column = column
+        self.df = pl.read_csv(csv_path, columns=[column])
+        self.ids_cache = []
+    
+    def generate_sequences(self):
+        for row in self.df.iter_rows(named=self.column):
+            text = row[self.column]
+            
+            while len(self.ids_cache) > self.n_tokens:
+                yield self.ids_cache[:self.n_tokens]
+                self.ids_cache = self.ids_cache[self.n_tokens:]
+            
+            ids = self.tokenizer.encode(text).ids
+            ids.extend([END_TOKEN_ID])
+            self.ids_cache.extend(ids)
+            
+    def __iter__(self):
+        return self.generate_sequences()
+            
 
 def collate_fn(input_ids):
     target_ids = [item[1:] for item in input_ids]
