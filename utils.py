@@ -26,10 +26,6 @@ def count_params(model):
     return n_params
 
 
-def sample(model, tokenizer):
-    pass
-
-
 def lr_schedule(step):
         if step <= WARMUP_STEP:
             alpha = (PEAK_LR - INIT_LR) / (WARMUP_STEP ** 2)
@@ -67,13 +63,11 @@ def save_model(model, optimizer, scaler, lr_scheduler, step, label='pretrained')
     torch.save(checkpoint, path)
         
         
-def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, acc=None, val_ppl=None, val_acc=None, lr=None):
+def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, val_ppl=None, lr=None):
     if loss is not None:
         writer.add_scalar('loss/train', loss, global_step)
         writer.add_scalar('ppl/train', ppl, global_step)
-        writer.add_scalar('acc/train', acc, global_step)
     
     if val_ppl is not None:    
         writer.add_scalar('ppl/val', val_ppl, global_step)
-        writer.add_scalar('acc/val', val_acc, global_step)
 
