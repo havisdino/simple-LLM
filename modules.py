@@ -60,7 +60,7 @@ class FFN(nn.Sequential):
         
 
 class Transformer(nn.Module, ABC):
-    def __init__(self, d_model, n_heads, dff, n_blocks, maxlen, vocab_size, dropout=0.1):
+    def __init__(self, d_model, n_heads, dff, n_blocks, maxlen, vocab_size, dropout=0.1, **kwargs):
         super().__init__()
         self.n_blocks = n_blocks
         self.te = nn.Embedding(vocab_size, d_model)
@@ -139,18 +139,23 @@ class ReZeroTransformer(Transformer):
     def _build_transformer_blocks(self, n_blocks, d_model, n_heads, dff, dropout):
         for _ in range(n_blocks):
             self.blocks.append(ReZeroTransformerBlock(d_model, n_heads, dff, dropout))
-    
-    
-def get_model_from_config():
-    settings = dict(
+            
+            
+def get_model_config():
+    return dict(
         d_model=D_MODEL,
         n_heads=N_HEADS,
         dff=DFF,
         n_blocks=N_BLOCKS,
         maxlen=MAXLEN,
         vocab_size=VOCAB_SIZE,
-        dropout=DROPOUT
+        dropout=DROPOUT,
+        architecture=ARCHITECTURE
     )
+    
+    
+def get_model_from_config():
+    settings = get_model_config()
     
     if ARCHITECTURE == 'vanilla':
         model = VanillaTransformer(**settings)

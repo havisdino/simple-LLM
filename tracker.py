@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import os
 from config import *
+from modules import get_model_config
 
 
 class Tracker:
@@ -17,7 +18,8 @@ class Tracker:
             model=model_state_dict,
             optimizer=optimizer.state_dict(),
             scaler=scaler.state_dict(),
-            lr_scheduler=lr_scheduler.state_dict()
+            lr_scheduler=lr_scheduler.state_dict(),
+            settings=get_model_config()
         )
     
     def save_model(self, step, label='pretrained'):
