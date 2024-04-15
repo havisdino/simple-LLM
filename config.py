@@ -30,7 +30,7 @@ D_MODEL = 768
 DFF = D_MODEL * 4
 N_HEADS = 12
 N_BLOCKS = 10
-MAXLEN = 256
+MAXLEN = 512
 VOCAB_SIZE = 30000
 DROPOUT = 0.1
 WEIGHT_STD = 0.05
@@ -41,15 +41,15 @@ WEIGHT_STD = 0.05
 ARCHITECTURE = 'rezero' # options: 'rezero', 'vanilla'
 EPOCHS = 100
 GLOBAL_BATCH_SIZE = 1600
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 GRAD_ACCUM_STEP = GLOBAL_BATCH_SIZE // BATCH_SIZE
 DEVICE = 'cuda'
 CHECKPOINT_STEP = 10     # Save the model after <CHECKPOINT_STEP> steps of grad accumulation
 PREFETCH_FACTOR = 2
 USE_AMP = True
 TRAIN_LIMIT = None
-VAL_LIMIT = 50 * BATCH_SIZE     # number of samples
-SAVE_LAST_K_CHECKPOINTS = 10
+VAL_LIMIT = 100 * BATCH_SIZE     # number of samples
+SAVE_LAST_K_CHECKPOINTS = 5
 # ------------------------------------------------------------
 
 
