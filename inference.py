@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from tokenizers import Tokenizer
 import torch
 
-from config import DEVICE, TOKENIZER_PATH
+from config import DEVICE, MAXLEN, TOKENIZER_PATH
 from sampler import Sampler
 from modules import get_model_from_config
 
@@ -17,10 +17,11 @@ if __name__ == '__main__':
     parser.add_argument('--robust', type=float, default=3.)
     parser.add_argument('--topk', type=int, default=5)
     parser.add_argument('--seed', type=str, required=True)
+    parser.add_argument('--maxlen', type=int, default=MAXLEN)
 
     args = parser.parse_args()
 
-    checkpoint = torch.load(args.checkpoint)
+    checkpoint = torch.load(args.checkpoint, args.device)
     model = get_model_from_config()
     model.load_state_dict(checkpoint['model'])
     
@@ -28,5 +29,5 @@ if __name__ == '__main__':
 
     sampler = Sampler(model, tokenizer, args.device, args.robust)
 
-    seed = sampler.sample(args.seed, args.topk)
+    seed = sampler.sample(args.seed, args.topk, args.maxlen)
     print(seed)

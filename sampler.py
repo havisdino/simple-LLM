@@ -20,10 +20,10 @@ class Sampler:
             self.dtype = torch.bfloat16
     
     @torch.no_grad()
-    def sample(self, seed, top_k=5):
+    def sample(self, seed, top_k=5, maxlen=MAXLEN):
         ids = self.tokenizer.encode(seed).ids
         
-        while len(ids) <= MAXLEN:
+        while len(ids) <= maxlen:
             inputs = torch.tensor([ids], device=self.device)
 
             with torch.autocast(self.device, self.dtype, enabled=USE_AMP):
