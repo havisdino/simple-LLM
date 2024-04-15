@@ -50,3 +50,6 @@ def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, val_ppl=Non
     if val_ppl is not None:    
         writer.add_scalar('ppl/val', val_ppl, global_step)
 
+
+def get_step_from_name(name):
+    return int(name.split('-')[-1].replace('.pt', ''))

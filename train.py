@@ -7,7 +7,7 @@ from dataset import CSVTextDataset
 from evaluate import evaluate, get_perplexity
 from modules import get_model_from_config
 from tracker import Tracker
-from utils import count_params, init_weights, set_description_bar, write_tensorboard_logs
+from utils import count_params, get_step_from_name, init_weights, set_description_bar, write_tensorboard_logs
 from torch.utils.tensorboard import SummaryWriter
 from config import *
 
@@ -18,10 +18,10 @@ def get_loss(model, input_ids, target_ids):
     return loss
 
 
-def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler):
+def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler, start_step=0):
     writer = SummaryWriter('logs')
     tracker = Tracker(model, optimizer, scaler, lr_scheduler)
-    global_step = 0
+    global_step = start_step
     ppl, val_ppl = None, None
     
     print(f'Accumulating gradients after {GRAD_ACCUM_STEP} steps')
@@ -102,7 +102,9 @@ if __name__ == '__main__':
     if args.from_checkpoint is not None:
         checkpoint = torch.load(args.from_checkpoint, DEVICE)
         model.load_state_dict(checkpoint['model'])
+        start_step = get_step_from_name(args.from_checkpoint)
     else:
+        start_step = 0
         model.apply(init_weights)
     
     if args.data_parallel:
@@ -139,5 +141,5 @@ if __name__ == '__main__':
     train_dl = DataLoader(train_ds, **loader_settings)
     val_dl = DataLoader(val_ds, **loader_settings)
     
-    fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler)
+    fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler, start_step)
     
