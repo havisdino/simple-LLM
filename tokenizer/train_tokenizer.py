@@ -15,6 +15,6 @@ args = parser.parse_args()
 
 tokenizer = ByteLevelBPETokenizer()
 tokenizer.train(args.files, vocab_size=VOCAB_SIZE - 2)
-tokenizer.add_special_tokens(['<sum>', '<end>'])
+tokenizer.add_special_tokens(['<end>', '<sum>'])
 
 tokenizer.save(args.destination)

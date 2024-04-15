@@ -54,4 +54,5 @@ SAVE_LAST_K_CHECKPOINTS = 10
 
 # ---------- Data settings ----------
 END_TOKEN_ID = 29998
+TOKENIZER_PATH = 'tokenizer/byte-level-bpe-tinystories.json'
 # ------------------------------------------------------------

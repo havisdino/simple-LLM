@@ -89,12 +89,11 @@ if __name__ == '__main__':
     parser.add_argument('--train-ds', type=str, required=True)
     parser.add_argument('--val-ds', type=str, required=True)
     parser.add_argument('--data-parallel', type=bool, default=True)
-    parser.add_argument('--tokenizer', type=str, default='tokenizer/byte-level-bpe-wikitext103.json')
     parser.add_argument('--from-checkpoint', default=None)
     
     args = parser.parse_args()
     
-    tokenizer = Tokenizer.from_file(args.tokenizer)
+    tokenizer = Tokenizer.from_file(TOKENIZER_PATH)
     
     model = get_model_from_config() 
     count_params(model)

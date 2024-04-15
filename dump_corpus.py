@@ -1,3 +1,6 @@
+from config import TOKENIZER_PATH
+
+
 def to_bytes(ids, size):
     ids = [i.to_bytes(size, 'big') for i in ids]
     return b''.join(ids)
@@ -42,5 +45,5 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    tokenizer = Tokenizer.from_file('tokenizer/byte-level-bpe-wikitext103.json')
+    tokenizer = Tokenizer.from_file(TOKENIZER_PATH)
     tokenize_corpus(args.file_path, args.destination, tokenizer)

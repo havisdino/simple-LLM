@@ -5,7 +5,7 @@
   "added_tokens": [
     {
       "id": 29998,
-      "content": "<sum>",
+      "content": "<end>",
       "single_word": false,
       "lstrip": false,
       "rstrip": false,
@@ -14,7 +14,7 @@
     },
     {
       "id": 29999,
-      "content": "<end>",
+      "content": "<sum>",
       "single_word": false,
       "lstrip": false,
       "rstrip": false,
