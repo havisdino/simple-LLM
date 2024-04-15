@@ -124,10 +124,10 @@ if __name__ == '__main__':
         scaler.load_state_dict(checkpoint['scaler'])
     
     if args.train_ds.endswith('.csv'):
-        train_ds = CSVTextDataset(args.train_ds, MAXLEN + 1, tokenizer)
+        train_ds = CSVTextDataset(args.train_ds, MAXLEN + 1, tokenizer, limit=TRAIN_LIMIT)
         val_ds = CSVTextDataset(args.val_ds, MAXLEN + 1, tokenizer, limit=VAL_LIMIT)
     elif args.train_ds.endswith('.bds'):
-        train_ds = TokenDataset(args.train_ds, MAXLEN + 1, MAXLEN // 4)
+        train_ds = TokenDataset(args.train_ds, MAXLEN + 1, MAXLEN // 4, limit=TRAIN_LIMIT)
         val_ds = TokenDataset(args.val_ds, MAXLEN + 1, 0, limit=VAL_LIMIT)
     
     loader_settings = dict(

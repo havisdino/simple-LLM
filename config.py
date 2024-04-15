@@ -47,6 +47,7 @@ DEVICE = 'cuda'
 CHECKPOINT_STEP = 10     # Save the model after <CHECKPOINT_STEP> steps of grad accumulation
 PREFETCH_FACTOR = 2
 USE_AMP = True
+TRAIN_LIMIT = None
 VAL_LIMIT = 50 * BATCH_SIZE     # number of samples
 SAVE_LAST_K_CHECKPOINTS = 10
 # ------------------------------------------------------------
