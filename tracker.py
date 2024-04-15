@@ -25,7 +25,7 @@ class Tracker:
             os.makedirs('checkpoints')
             
         path = f'checkpoints/{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{step}.pt'
-        last_kth = f'checkpoints/{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{step - self.last_k}.pt'
+        last_kth = f'checkpoints/{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{step - self.last_k * CHECKPOINT_STEP}.pt'
         if os.path.exists(last_kth):
             os.remove(last_kth)
         
