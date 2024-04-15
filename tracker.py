@@ -6,7 +6,7 @@ from config import *
 
 class Tracker:
     def __init__(self, model, optimizer, scaler, lr_scheduler):
-        self.last_k = SAVE_LAST_K_CHECKPOINTS
+        self.last_k = SAVE_LAST_K_CHECKPOINTS * CHECKPOINT_STEP
         
         if isinstance(model, nn.DataParallel):
             model_state_dict = model.module.state_dict()
@@ -25,7 +25,7 @@ class Tracker:
             os.makedirs('checkpoints')
             
         path = f'checkpoints/{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{step}.pt'
-        last_kth = f'checkpoints/{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{step - self.last_k * CHECKPOINT_STEP}.pt'
+        last_kth = f'checkpoints/{label}-D{D_MODEL}-H{N_HEADS}-B{N_BLOCKS}-{step - self.last_k}.pt'
         if os.path.exists(last_kth):
             os.remove(last_kth)
         
