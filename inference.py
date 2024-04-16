@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint', type=str, required=True)
     parser.add_argument('--device', type=str, default=DEVICE)
     parser.add_argument('--tokenizer', type=str, default=TOKENIZER_PATH)
-    parser.add_argument('--robust', type=float, default=3.)
+    parser.add_argument('--robust', type=float, default=1.)
     parser.add_argument('--topk', type=int, default=5)
     parser.add_argument('--seed', type=str, required=True)
     parser.add_argument('--maxlen', type=int, default=MAXLEN)
