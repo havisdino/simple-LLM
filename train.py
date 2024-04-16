@@ -20,7 +20,7 @@ def get_loss(model, input_ids, target_ids):
 
 def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler, start_step=0):
     writer = SummaryWriter('logs')
-    tracker = Tracker(model, optimizer, scaler, lr_scheduler)
+    tracker = Tracker(SAVE_LAST_K_CHECKPOINTS, CHECKPOINT_STEP)
     global_step = start_step
     ppl, val_ppl = None, None
     
@@ -74,7 +74,7 @@ def fit(model, train_dl, val_dl, optimizer, lr_scheduler, scaler, start_step=0):
                         val_ppl=val_ppl,
                         lr=f'{lr:.2e}'
                     )
-                    tracker.save_model(global_step)
+                    tracker.save_model(model, optimizer, scaler, lr_scheduler, global_step)
     writer.close()
                     
 
@@ -101,6 +101,7 @@ if __name__ == '__main__':
     if args.from_checkpoint is not None:
         checkpoint = torch.load(args.from_checkpoint, DEVICE)
         model.load_state_dict(checkpoint['model'])
+        print('Checkpoint loaded')
         start_step = get_step_from_name(args.from_checkpoint)
     else:
         start_step = 0
