@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from utils import get_causal_mask
+from utils import get_causal_mask, init_weights
 from config import *
 
 
@@ -71,6 +71,7 @@ class Transformer(nn.Module, ABC):
         self._build_transformer_blocks(n_blocks, d_model, n_heads, dff, dropout)
             
         self.register_buffer('causal_mask', get_causal_mask(maxlen))
+        self.apply(init_weights)
     
     @abstractmethod
     def _build_transformer_blocks(self, n_blocks, d_model, n_heads, dff, dropout):
@@ -154,8 +155,9 @@ def get_model_config():
     )
     
     
-def get_model_from_config():
-    settings = get_model_config()
+def get_model_from_config(settings=None):
+    if settings is None:
+        settings = get_model_config()
     
     if ARCHITECTURE == 'vanilla':
         model = VanillaTransformer(**settings)

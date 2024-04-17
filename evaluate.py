@@ -12,15 +12,15 @@ def get_perplexity(model, input_ids, target_ids):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader):
+def evaluate(model, data_loader, device, use_amp=True):
     model.eval()
     ppls = []
     
     for input_ids, target_ids in data_loader:
-        input_ids = input_ids.to(DEVICE)
-        target_ids = target_ids.to(DEVICE)
+        input_ids = input_ids.to(device)
+        target_ids = target_ids.to(device)
         
-        with torch.autocast(DEVICE, torch.float16, enabled=USE_AMP):
+        with torch.autocast(device, torch.float16, enabled=use_amp):
             ppls.append(get_perplexity(model, input_ids, target_ids))
     
     ppl = sum(ppls) / len(ppls)
