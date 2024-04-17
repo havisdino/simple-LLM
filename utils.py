@@ -42,7 +42,7 @@ def set_description_bar(bar, epoch, step, **kwargs):
     bar.set_postfix(kwargs)
         
         
-def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, val_ppl=None, lr=None):
+def write_tensorboard_logs(writer, *, global_step, loss=None, ppl=None, val_ppl=None, lr=None):
     if loss is not None:
         writer.add_scalar('loss/train', loss, global_step)
         writer.add_scalar('ppl/train', ppl, global_step)

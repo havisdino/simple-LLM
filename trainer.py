@@ -97,7 +97,13 @@ class Trainer:
                     self.validate(input_ids, target_ids)
                     
                     lr = self.optimizer.param_groups[0]['lr']
-                    write_tensorboard_logs(writer, self.global_step, self.batch_loss(), self.ppl, lr)
+                    write_tensorboard_logs(
+                        writer=writer,
+                        global_step=self.global_step,
+                        loss=self.batch_loss(), 
+                        ppl=self.ppl,
+                        lr=lr
+                    )
                     
                     grad_step = step // self.grad_accum_step
                     set_description_bar(
@@ -113,7 +119,12 @@ class Trainer:
                         
                         self.validate(val_dl=val_dl)
                         
-                        write_tensorboard_logs(writer, self.global_step, val_ppl=self.val_ppl, lr=lr)
+                        write_tensorboard_logs(
+                            writer=writer,
+                            global_step=self.global_step,
+                            val_ppl=self.val_ppl,
+                            lr=lr
+                        )
                         set_description_bar(
                             bar, epoch, grad_step,
                             loss=self.batch_loss(),
