@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 
-from django import conf
 from tokenizers import Tokenizer
 import torch
 
@@ -29,10 +28,6 @@ if __name__ == '__main__':
     
     model = get_model_from_config(settings)
     model.load_state_dict(checkpoint['model'])
-    
-    print('Checkpoint loaded, default settings might be ignored')
-    
-    print(settings)
     
     tokenizer = Tokenizer.from_file(args.tokenizer)
 

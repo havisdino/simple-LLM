@@ -34,11 +34,11 @@ MAXLEN = 512
 VOCAB_SIZE = 30000
 DROPOUT = 0.1
 WEIGHT_STD = 0.05
+ARCHITECTURE = 'rezero' # options: 'rezero', 'vanilla'
 # ------------------------------------------------------------
 
 
 # ---------- Training settings ----------
-ARCHITECTURE = 'rezero' # options: 'rezero', 'vanilla'
 EPOCHS = 100
 GLOBAL_BATCH_SIZE = 1600
 BATCH_SIZE = 16

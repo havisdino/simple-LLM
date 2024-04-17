@@ -144,14 +144,14 @@ class ReZeroTransformer(Transformer):
             
 def get_model_config():
     return dict(
-        D_MODEL=config.D_MODEL,
-        N_HEADS=config.N_HEADS,
-        DFF=config.DFF,
-        N_BLOCKS=config.N_BLOCKS,
-        MAXLEN=config.MAXLEN,
-        VOCAB_SIZE=config.VOCAB_SIZE,
-        DROPOUT=config.DROPOUT,
-        ARCHITECTURE=config.ARCHITECTURE
+        d_model=config.D_MODEL,
+        n_heads=config.N_HEADS,
+        dff=config.DFF,
+        n_blocks=config.N_BLOCKS,
+        maxlen=config.MAXLEN,
+        vocab_size=config.VOCAB_SIZE,
+        dropout=config.DROPOUT,
+        architecture=config.ARCHITECTURE
     )
     
     
