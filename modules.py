@@ -4,7 +4,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from utils import get_causal_mask, init_weights
-from config import *
+import config
 
 
 class SelfAttention(nn.Module):
@@ -144,14 +144,14 @@ class ReZeroTransformer(Transformer):
             
 def get_model_config():
     return dict(
-        d_model=D_MODEL,
-        n_heads=N_HEADS,
-        dff=DFF,
-        n_blocks=N_BLOCKS,
-        maxlen=MAXLEN,
-        vocab_size=VOCAB_SIZE,
-        dropout=DROPOUT,
-        architecture=ARCHITECTURE
+        D_MODEL=config.D_MODEL,
+        N_HEADS=config.N_HEADS,
+        DFF=config.DFF,
+        N_BLOCKS=config.N_BLOCKS,
+        MAXLEN=config.MAXLEN,
+        VOCAB_SIZE=config.VOCAB_SIZE,
+        DROPOUT=config.DROPOUT,
+        ARCHITECTURE=config.ARCHITECTURE
     )
     
     
@@ -159,9 +159,9 @@ def get_model_from_config(settings=None):
     if settings is None:
         settings = get_model_config()
     
-    if ARCHITECTURE == 'vanilla':
+    if config.ARCHITECTURE == 'vanilla':
         model = VanillaTransformer(**settings)
-    elif ARCHITECTURE == 'rezero':
+    elif config.ARCHITECTURE == 'rezero':
         model = ReZeroTransformer(**settings)
     else:
         raise ValueError()

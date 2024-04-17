@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from config import *
 import math
+import yaml
 
 
 def get_causal_mask(maxlen):
@@ -52,3 +53,8 @@ def write_tensorboard_logs(writer, global_step, loss=None, ppl=None, val_ppl=Non
 
 def get_step_from_name(name):
     return int(name.split('-')[-1].replace('.pt', ''))
+
+
+def modify_config(config, **kwargs):
+    for key, item in kwargs.items():
+        setattr(config, key.upper(), item)   

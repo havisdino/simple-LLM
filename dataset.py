@@ -4,7 +4,7 @@ from torch.utils.data import IterableDataset, Dataset
 from torchtext import transforms
 import polars as pl
 
-from config import END_TOKEN_ID
+import config
 
 
 class TokenDataset(IterableDataset):
@@ -59,7 +59,7 @@ class CSVTextDataset(IterableDataset):
                 self.ids_cache = self.ids_cache[self.n_tokens:]
             
             ids = self.tokenizer.encode(text).ids
-            ids.extend([END_TOKEN_ID])
+            ids.extend([config.END_TOKEN_ID])
             self.ids_cache.extend(ids)
             
     def __iter__(self):
@@ -71,12 +71,12 @@ def collate_fn(input_ids):
     input_ids = [item[:-1] for item in input_ids]
     input_ids = transforms.F.to_tensor(
         input=input_ids,
-        padding_value=END_TOKEN_ID,
+        padding_value=config.END_TOKEN_ID,
         dtype=torch.int32
     )
     target_ids = transforms.F.to_tensor(
         input=target_ids,
-        padding_value=END_TOKEN_ID,
+        padding_value=config.END_TOKEN_ID,
         dtype=torch.long
     )
     return input_ids, target_ids

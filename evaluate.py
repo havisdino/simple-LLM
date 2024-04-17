@@ -1,13 +1,13 @@
 import torch
 from torcheval.metrics.functional.text import perplexity
-from config import *
+import config
 
 
 @torch.no_grad()
 def get_perplexity(model, input_ids, target_ids):
     model.eval()
     logits = model(input_ids)
-    ppl = perplexity(logits, target_ids, ignore_index=END_TOKEN_ID)
+    ppl = perplexity(logits, target_ids, ignore_index=config.END_TOKEN_ID)
     return ppl
 
 
