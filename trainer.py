@@ -121,7 +121,7 @@ class Trainer:
                             val_ppl=self.val_ppl,
                             lr=f'{lr:.2e}'
                         )
-                        tracker.save_model(
+                        tracker.save(
                             self.model, self.optimizer,
                             self.scaler, self.lr_scheduler,
                             self.global_step
