@@ -2,7 +2,6 @@ import torch
 from torch import nn
 from config import *
 import math
-import yaml
 
 
 def get_causal_mask(maxlen):
@@ -36,8 +35,8 @@ def lr_schedule(step):
         return lr
     
 
-def set_description_bar(bar, epoch, step, **kwargs):
-    description = f'epoch {epoch}/{EPOCHS} - step {step}'
+def set_description_bar(bar, step, **kwargs):
+    description = f'step {step}/{N_STEPS}'
     bar.set_description(description)
     bar.set_postfix(kwargs)
         
