@@ -5,7 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from evaluate import evaluate, get_perplexity
-from tracker import Tracker
+from saver import Saver
 from utils import set_description_bar, write_tensorboard_logs
 
 
@@ -82,7 +82,7 @@ class Trainer:
         n_steps += self.global_step
         
         writer = SummaryWriter('logs')
-        tracker = Tracker(self.save_last_kth, self.checkpoint_step)
+        saver = Saver(self.save_last_kth, self.checkpoint_step)
         
         print(f'Accumulating gradients after {self.grad_accum_step} substeps')
         
@@ -140,7 +140,7 @@ class Trainer:
                         val_ppl=self.val_ppl,
                         lr=f'{lr:.2e}'
                     )
-                    tracker.save(
+                    saver.save(
                         self.model, self.optimizer,
                         self.scaler, self.lr_scheduler,
                         self.global_step

@@ -5,7 +5,7 @@ import config
 from modules import get_model_config
 
 
-class Tracker:
+class Saver:
     def __init__(self, last_k, checkpoint_interval):
         self.last_k = last_k * checkpoint_interval
         
