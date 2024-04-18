@@ -51,7 +51,7 @@ def write_tensorboard_logs(writer, *, global_step, loss=None, ppl=None, val_ppl=
         writer.add_scalar('ppl/val', val_ppl, global_step)
     
     if lr is not None:
-        writer.add_scalar('lr', val_ppl, global_step)
+        writer.add_scalar('lr', lr, global_step)
 
 
 def get_step_from_name(name):
