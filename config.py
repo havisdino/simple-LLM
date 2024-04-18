@@ -29,7 +29,7 @@ DOWN_WEIGHT = 80
 D_MODEL = 768
 DFF = D_MODEL * 4
 N_HEADS = 12
-N_BLOCKS = 10
+N_BLOCKS = 11
 MAXLEN = 512
 VOCAB_SIZE = 30000
 DROPOUT = 0.1
@@ -39,7 +39,7 @@ ARCHITECTURE = 'rezero' # options: 'rezero', 'vanilla'
 
 
 # ---------- Training settings ----------
-EPOCHS = 100
+N_STEPS = 1000
 GLOBAL_BATCH_SIZE = 1600
 BATCH_SIZE = 16
 GRAD_ACCUM_STEP = GLOBAL_BATCH_SIZE // BATCH_SIZE
