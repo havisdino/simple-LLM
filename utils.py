@@ -35,8 +35,8 @@ def lr_schedule(step):
         return lr
     
 
-def set_description_bar(bar, step, **kwargs):
-    description = f'step {step}/{N_STEPS}'
+def set_description_bar(bar, step, n_steps, **kwargs):
+    description = f'step {step}/{n_steps}'
     bar.set_description(description)
     bar.set_postfix(kwargs)
         

@@ -115,7 +115,7 @@ class Trainer:
                     lr=lr
                 )
                 set_description_bar(
-                    bar, self.global_step,
+                    bar, self.global_step, n_steps,
                     loss=self.batch_loss(),
                     ppl=self.ppl,
                     val_ppl=self.val_ppl,
@@ -134,7 +134,7 @@ class Trainer:
                         lr=lr
                     )
                     set_description_bar(
-                        bar, self.global_step,
+                        bar, self.global_step, n_steps,
                         loss=self.batch_loss(),
                         ppl=self.ppl,
                         val_ppl=self.val_ppl,
