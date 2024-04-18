@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import os
-import config
+import config as C
 from modules import get_model_config
 
 
@@ -27,11 +27,11 @@ class Saver:
         if not os.path.exists('./checkpoints'):
             os.makedirs('checkpoints')
             
-        path = (f'checkpoints/{label}-{config.ARCHITECTURE}-D{config.D_MODEL}'
-                + f'-H{config.N_HEADS}-B{config.N_BLOCKS}-{step}.pt')
+        path = (f'checkpoints/{label}-{C.ARCHITECTURE}-D{C.D_MODEL}'
+                + f'-H{C.N_HEADS}-B{C.N_BLOCKS}-{step}.pt')
         
-        last_kth = (f'checkpoints/{label}-{config.ARCHITECTURE}-D{config.D_MODEL}'
-                    + f'-H{config.N_HEADS}-B{config.N_BLOCKS}-{step - self.last_k}.pt')
+        last_kth = (f'checkpoints/{label}-{C.ARCHITECTURE}-D{C.D_MODEL}'
+                    + f'-H{C.N_HEADS}-B{C.N_BLOCKS}-{step - self.last_k}.pt')
         
         if os.path.exists(last_kth):
             os.remove(last_kth)

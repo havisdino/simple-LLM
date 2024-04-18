@@ -3,7 +3,7 @@ from tokenizers import Tokenizer
 import torch
 from dataset import CSVTextDataset
 from modules import get_model_from_config
-import config
+import config as C
 from trainer import Trainer
 from utils import count_params, get_step_from_name, modify_config
 from utils import lr_schedule
@@ -20,12 +20,12 @@ parser.add_argument('--from-checkpoint', default=None)
 
 args = parser.parse_args()
 
-tokenizer = Tokenizer.from_file(config.TOKENIZER_PATH)
+tokenizer = Tokenizer.from_file(C.TOKENIZER_PATH)
 
 if args.from_checkpoint is not None:
-    checkpoint = torch.load(args.from_checkpoint, config.DEVICE)
+    checkpoint = torch.load(args.from_checkpoint, C.DEVICE)
     settings = checkpoint['settings']
-    modify_config(config, **settings)
+    modify_config(C, **settings)
     
     model = get_model_from_config(settings) 
     model.load_state_dict(checkpoint['model'])
@@ -39,7 +39,7 @@ count_params(model)
 
 if args.data_parallel:
     model = nn.DataParallel(model)
-model.to(config.DEVICE)
+model.to(C.DEVICE)
 
 scaler = torch.cuda.amp.GradScaler()
 optimizer = torch.optim.AdamW(model.parameters(), lr=1.)
@@ -55,16 +55,16 @@ if args.from_checkpoint is not None:
     scaler.load_state_dict(checkpoint['scaler'])
 
 if args.traindata.endswith('.csv'):
-    traindata = CSVTextDataset(args.traindata, config.MAXLEN + 1, tokenizer, limit=config.TRAIN_LIMIT)
-    valdata = CSVTextDataset(args.valdata, config.MAXLEN + 1, tokenizer, limit=config.VAL_LIMIT)
+    traindata = CSVTextDataset(args.traindata, C.MAXLEN + 1, tokenizer, limit=C.TRAIN_LIMIT)
+    valdata = CSVTextDataset(args.valdata, C.MAXLEN + 1, tokenizer, limit=C.VAL_LIMIT)
 elif args.traindata.endswith('.bds'):
-    traindata = TokenDataset(args.traindata, config.MAXLEN + 1, config.MAXLEN // 4, limit=config.TRAIN_LIMIT)
-    valdata = TokenDataset(args.valdata, config.MAXLEN + 1, 0, limit=config.VAL_LIMIT)
+    traindata = TokenDataset(args.traindata, C.MAXLEN + 1, C.MAXLEN // 4, limit=C.TRAIN_LIMIT)
+    valdata = TokenDataset(args.valdata, C.MAXLEN + 1, 0, limit=C.VAL_LIMIT)
 
 loader_settings = dict(
-    batch_size=config.BATCH_SIZE,
+    batch_size=C.BATCH_SIZE,
     collate_fn=collate_fn,
-    prefetch_factor=config.PREFETCH_FACTOR,
+    prefetch_factor=C.PREFETCH_FACTOR,
     num_workers=2,
     drop_last=True
 )
@@ -73,9 +73,9 @@ valloader = DataLoader(valdata, **loader_settings)
 
 trainer = Trainer(
     model, optimizer, lr_scheduler, scaler,
-    config.VOCAB_SIZE, config.USE_AMP, config.DEVICE,
-    config.GRAD_ACCUM_STEP, config.SAVE_LAST_K_CHECKPOINTS,
-    config.CHECKPOINT_STEP, start_step
+    C.VOCAB_SIZE, C.USE_AMP, C.DEVICE,
+    C.GRAD_ACCUM_STEP, C.SAVE_LAST_K_CHECKPOINTS,
+    C.CHECKPOINT_STEP, start_step
 )
 
-trainer.fit(trainloader, valloader, config.N_STEPS)
+trainer.fit(trainloader, valloader, C.N_STEPS)

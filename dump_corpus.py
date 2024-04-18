@@ -1,4 +1,4 @@
-import config
+import config as C
 
 
 def to_bytes(ids, size):
@@ -45,5 +45,5 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    tokenizer = Tokenizer.from_file(config.TOKENIZER_PATH)
+    tokenizer = Tokenizer.from_file(C.TOKENIZER_PATH)
     tokenize_corpus(args.file_path, args.destination, tokenizer)
