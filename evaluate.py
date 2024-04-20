@@ -1,5 +1,5 @@
 import torch
-from torcheval.metrics.functional.text import perplexity
+from torchmetrics.functional.text.perplexity import perplexity
 import config as C
 
 

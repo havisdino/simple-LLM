@@ -1,5 +1,5 @@
 torch
-torcheval
+torchmetrics
 torchtext
 polars
 tokenizers
