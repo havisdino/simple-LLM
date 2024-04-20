@@ -23,8 +23,9 @@ class Sampler:
     def sample(self, seed, top_k=5, maxlen=C.MAXLEN):
         ids = self.tokenizer.encode(seed).ids
         
-        while len(ids) <= maxlen:
-            inputs = torch.tensor([ids], device=self.device)
+        while len(ids) < maxlen:
+            _ids = ids[-C.MAXLEN:]
+            inputs = torch.tensor([_ids], device=self.device)
 
             with torch.autocast(self.device, self.dtype, enabled=C.USE_AMP):
                 logits = self.model(inputs)[0, -1]
