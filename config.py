@@ -49,7 +49,7 @@ PREFETCH_FACTOR = 2
 USE_AMP = True
 TRAIN_LIMIT = None
 VAL_LIMIT = 100 * BATCH_SIZE     # number of samples
-SAVE_LAST_K_CHECKPOINTS = 5
+SAVE_LAST_K_CHECKPOINTS = 2
 # ------------------------------------------------------------
 
 
