@@ -14,8 +14,8 @@ from torch import nn
 
 parser = ArgumentParser()
 parser.add_argument('--traindata', type=str, required=True)
-parser.add_argument('--valdata', type=str, required=True)
-parser.add_argument('--data-parallel', type=bool, default=True)
+parser.add_argument('--valdata', type=str, default=None)
+parser.add_argument('--data-parallel', type=bool, default=False)
 parser.add_argument('--from-checkpoint', default=None)
 
 args = parser.parse_args()
@@ -56,10 +56,12 @@ if args.from_checkpoint is not None:
 
 if args.traindata.endswith('.csv'):
     traindata = CSVTextDataset(args.traindata, C.MAXLEN + 1, tokenizer, limit=C.TRAIN_LIMIT)
-    valdata = CSVTextDataset(args.valdata, C.MAXLEN + 1, tokenizer, limit=C.VAL_LIMIT)
+    if args.valdata is not None:
+        valdata = CSVTextDataset(args.valdata, C.MAXLEN + 1, tokenizer, limit=C.VAL_LIMIT)
 elif args.traindata.endswith('.bds'):
     traindata = TokenDataset(args.traindata, C.MAXLEN + 1, C.MAXLEN // 4, limit=C.TRAIN_LIMIT)
-    valdata = TokenDataset(args.valdata, C.MAXLEN + 1, 0, limit=C.VAL_LIMIT)
+    if args.valdata is not None:
+        valdata = TokenDataset(args.valdata, C.MAXLEN + 1, 0, limit=C.VAL_LIMIT)
 
 loader_settings = dict(
     batch_size=C.BATCH_SIZE,
@@ -69,7 +71,10 @@ loader_settings = dict(
     drop_last=True
 )
 trainloader = DataLoader(traindata, **loader_settings)
-valloader = DataLoader(valdata, **loader_settings)
+if args.valdata is not None:
+    valloader = DataLoader(valdata, **loader_settings)
+else:
+    valloader = None
 
 trainer = Trainer(
     model, optimizer, lr_scheduler, scaler,

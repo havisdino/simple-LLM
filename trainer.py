@@ -125,7 +125,8 @@ class Trainer:
                 if self.global_step % self.checkpoint_step == 0:
                     bar.set_description(bar.desc + 'validating...')
                     
-                    self.validate(valloader=valloader)
+                    if valloader is not None:
+                        self.validate(valloader=valloader)
                     
                     write_tensorboard_logs(
                         writer=writer,
