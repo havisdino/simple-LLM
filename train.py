@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from tokenizers import Tokenizer
 import torch
 from dataset import CSVTextDataset
-from modules import get_model_from_config
+from modules import get_model_config, get_model_from_config
 import config as C
 from trainer import Trainer
 from utils import count_params, get_step_from_name, modify_config
@@ -33,6 +33,7 @@ if args.from_checkpoint is not None:
     
     start_step = get_step_from_name(args.from_checkpoint)
 else:
+    model = get_model_from_config(get_model_config())
     start_step = 0
 
 count_params(model)
