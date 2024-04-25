@@ -29,7 +29,7 @@ class Sampler:
             inputs = torch.tensor([_ids], device=self.device)
 
             with torch.autocast(self.device, self.dtype, enabled=C.USE_AMP):
-                logits = self.model(inputs)[0, -1]
+                logits = self.model(inputs, use_causal_mask=False)[0, -1]
                 
                 # scale to make the prediction robust
                 logits = (logits - logits.mean()) * self.temparature
