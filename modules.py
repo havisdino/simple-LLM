@@ -21,19 +21,40 @@ class SelfAttention(nn.Module):
         self.register_buffer('scale', torch.FloatTensor([self.dim_head]).sqrt())
         self.dropout = nn.Dropout(dropout)
         
+        self.K_cache = None
+        self.V_cache = None
+        
+    def clear_kv_cache(self):
+        self.K_cache = None
+        self.V_cache = None
+        
     def forward(self, inputs, attn_mask=None):
         B, L, _ = inputs.size()
         
-        qkv = self.qkv(inputs)
-        qkv = qkv.view(B, L, self.n_heads, -1)
-        qkv = qkv.permute(0, 2, 1, 3)
-        Q, K, V = qkv.split(self.dim_head, dim=-1)
-        scores = Q.matmul(K.permute(0, 1, 3, 2)) / self.scale
+        if self.K_cache is None:
+            qkv = self.qkv(inputs)
+            qkv = qkv.view(B, L, self.n_heads, -1)
+            qkv = qkv.permute(0, 2, 1, 3)
+            Q, K, V = qkv.split(self.dim_head, dim=-1)
+            
+            self.K_cache = K
+            self.V_cache = V
+        else:
+            last_qkv = self.qkv(inputs[:, -1:, :])
+            last_qkv = last_qkv.view(B, 1, self.n_heads, -1)
+            last_qkv = last_qkv.permute(0, 2, 1, 3)
+            Q, last_K, last_V = qkv.split(self.dim_head, dim=-1)
+            # B x nheads x L x dhead
+            self.K_cache = torch.cat([self.K_cache, last_K], dim=-2)
+            self.V_cache = torch.cat([self.V_cache, last_V], dim=-2)
+            
+        scores = Q.matmul(self.K_cache.permute(0, 1, 3, 2)) / self.scale
         if attn_mask is not None:
             scores += attn_mask
         scores = F.softmax(scores, dim=-1)
         scores = self.dropout(scores)
-        outputs = scores.matmul(V)
+        outputs = scores.matmul(self.V_cache)
+        
         outputs = outputs.permute(0, 2, 1, 3).contiguous()
         outputs = outputs.view(B, L, -1)
         
@@ -73,6 +94,9 @@ class Transformer(nn.Module, ABC):
         self.register_buffer('causal_mask', get_causal_mask(maxlen))
         self.apply(init_weights)
     
+    def clear_kv_cache(self):
+        self.self_attn.clear_kv_cache()
+    
     @abstractmethod
     def _build_transformer_blocks(self, n_blocks, d_model, n_heads, dff, dropout):
         pass
@@ -101,6 +125,9 @@ class VanillaTransformerBlock(nn.Module):
         self.ffn = FFN(d_model, dff)
         self.dropout = nn.Dropout(dropout)
         
+    def clear_kv_cache(self):
+        self.self_attn.clear_kv_cache()
+        
     def forward(self, inputs, attn_mask=None):
         x = self.layer_norm1(inputs)
         x = self.self_attn(x, attn_mask) + x
@@ -121,6 +148,9 @@ class ReZeroTransformerBlock(nn.Module):
         self.self_attn = SelfAttention(d_model, n_heads, dropout)
         self.ffn = FFN(d_model, dff)
         self.dropout = nn.Dropout(dropout)
+    
+    def clear_kv_cache(self):
+        self.self_attn.clear_kv_cache()
         
     def forward(self, inputs, attn_mask=None):
         x = self.self_attn(inputs, attn_mask) * self.alpha + inputs

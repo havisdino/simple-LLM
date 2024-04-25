@@ -7,13 +7,13 @@ import config as C
 
 
 class Sampler:
-    def __init__(self, model: nn.Module, tokenizer: Tokenizer, device, robust_factor=3.0):
+    def __init__(self, model: nn.Module, tokenizer: Tokenizer, device, temparature=3.0):
         self.model = model
         self.device = device
         self.model.to(device)
         self.model.eval()
         self.tokenizer = tokenizer
-        self.robust_factor = robust_factor
+        self.temparature = temparature
         if device == 'cuda':
             self.dtype = torch.float16
         elif device == 'cpu':
@@ -22,6 +22,7 @@ class Sampler:
     @torch.no_grad()
     def sample(self, seed, top_k=5, maxlen=C.MAXLEN):
         ids = self.tokenizer.encode(seed).ids
+        self.model.clear_kv_cache()
         
         while len(ids) < maxlen:
             _ids = ids[-C.MAXLEN:]
@@ -31,7 +32,7 @@ class Sampler:
                 logits = self.model(inputs)[0, -1]
                 
                 # scale to make the prediction robust
-                logits = (logits - logits.mean()) * self.robust_factor
+                logits = (logits - logits.mean()) * self.temparature
                 
                 # mask out-of-top-k classes
                 i = torch.topk(logits, top_k).indices
