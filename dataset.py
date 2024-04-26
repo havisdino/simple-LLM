@@ -58,7 +58,7 @@ class CSVTextDataset(IterableDataset):
                 count += 1
                 if self.limit and count == self.limit:
                     return
-                self.ids_cache = self.ids_cache[self.n_tokens:]
+                self.ids_cache = self.ids_cache[self.n_tokens - 32:]
             
             ids = self.tokenizer.encode(text).ids
             ids.extend([C.END_TOKEN_ID])
