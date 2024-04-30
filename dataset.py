@@ -37,8 +37,9 @@ class TokenDataset(IterableDataset):
     
     
 class CSVTextDataset(IterableDataset):
-    def __init__(self, csv_path, n_tokens, tokenizer: Tokenizer, column='text', limit=None):
+    def __init__(self, csv_path, n_tokens, tokenizer: Tokenizer, column='text', limit=None, n_overlap=32):
         super().__init__()
+        self.n_overlap = n_overlap
         self.tokenizer = tokenizer
         self.n_tokens = n_tokens
         self.column = column
@@ -49,19 +50,21 @@ class CSVTextDataset(IterableDataset):
         self.limit = limit
     
     def generate_sequences(self):
+        N = self.n_tokens
+        R = self.n_overlap
         count = 0
         for row in self.df.iter_rows(named=self.column):
             text = row[self.column]
             
-            while len(self.ids_cache) > self.n_tokens:
-                yield self.ids_cache[:self.n_tokens]
+            while len(self.ids_cache) > N:
+                yield self.ids_cache[:N]
                 count += 1
                 if self.limit and count == self.limit:
                     return
-                self.ids_cache = self.ids_cache[self.n_tokens - 32:]
+                self.ids_cache = self.ids_cache[N - R:]
             
             ids = self.tokenizer.encode(text).ids
-            ids.extend([C.END_TOKEN_ID])
+            ids.append(C.END_TOKEN_ID)
             self.ids_cache.extend(ids)
             
     def __iter__(self):
