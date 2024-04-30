@@ -39,6 +39,8 @@ class TokenDataset(IterableDataset):
 class CSVTextDataset(IterableDataset):
     def __init__(self, csv_path, n_tokens, tokenizer: Tokenizer, column='text', limit=None, n_overlap=32):
         super().__init__()
+        assert n_overlap < n_tokens
+        
         self.n_overlap = n_overlap
         self.tokenizer = tokenizer
         self.n_tokens = n_tokens
