@@ -42,8 +42,8 @@ class CSVTextDataset(IterableDataset):
         self.tokenizer = tokenizer
         self.n_tokens = n_tokens
         self.column = column
-        self.df = pl.read_csv(csv_path, columns=[column])
-        self.df.select(pl.col(column).shuffle())
+        df = pl.read_csv(csv_path, columns=[column])
+        self.df = df.select(pl.col(column).shuffle())
         
         self.ids_cache = []
         self.limit = limit
